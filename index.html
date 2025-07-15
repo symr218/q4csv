@@ -49,6 +49,7 @@
 
   <!-- 読み上げ完了後に鳴らす音 -->
   <audio id="endSound" src="sounds/end.mp3" preload="auto"></audio>
+  <audio id="answerSound" src="sounds/answer.mp3" preload="auto"></audio>
 
   <!-- PapaParseライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -73,7 +74,7 @@
       if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "ja-JP";
-      utterance.pitch = 1.8;   // 声を高く（1.0が標準）
+      utterance.pitch = 2.0;   // 声を高く（1.0が標準）
 
       utterance.onend = () => {
         endSound.playbackRate = 1.5; // ← 効果音も速く
@@ -82,7 +83,7 @@
         setTimeout(() => {
           endSound.pause();
           endSound.currentTime = 0;
-        }, 800); // ← 0.5秒（500ms）再生
+        }, 1000); // ← 0.5秒（500ms）再生
       };
 
       speechSynthesis.speak(utterance);
@@ -125,6 +126,11 @@
       if (showAnswerPhase) {
         document.getElementById("answer").textContent = `A: ${row.Answer}`;
         showAnswerPhase = false;
+
+        // ✅ 答えを表示したときにSEを再生
+        const answerSound = document.getElementById("answerSound");
+        answerSound.currentTime = 0;
+        answerSound.play();
       } else {
         loadNextQuestion();
       }
