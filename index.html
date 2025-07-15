@@ -5,7 +5,7 @@
   <title>q4csv</title>
 </head>
 <body>
-  <h2>システム</h2>
+  <h2>システム</h2> 
   <button id="showQuestionBtn">ランダムに問題を表示</button>
   <button id="showAnswerBtn" disabled>答えを見る</button>
   <pre id="question">← ここに問題が表示されます</pre>
@@ -52,7 +52,7 @@
       // 🔊 音声で読み上げる（SpeechSynthesis API）
       const utterance = new SpeechSynthesisUtterance(currentAnswer);
       utterance.lang = "ja-JP";
-      speechSynthesis.speak(utterance);
+      speechSynthesis.speak(utterance); 
     });
   </script>
 </body>
