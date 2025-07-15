@@ -8,6 +8,9 @@
       font-family: sans-serif;
       padding: 20px;
     }
+    .hidden {
+      display: none;
+    }
     button {
       margin: 5px;
       padding: 10px 20px;
@@ -26,13 +29,26 @@
   </style>
 </head>
 <body>
-  <h2>システム</h2>
-  <button id="nextBtn">NEXT</button>
-  <button id="ngBtn">NG</button>
 
-  <div id="question">← ここに問題が表示されます</div>
-  <div id="answer"></div>
-  <div id="result"></div>
+  <!-- スタート画面 -->
+  <div id="startScreen">
+    <h2>q4csv</h2>
+    <button id="startBtn">スタート</button>
+  </div>
+
+  <!-- クイズ画面（非表示スタート） -->
+  <div id="quizScreen" class="hidden">
+    <h2>CSVクイズ</h2>
+    <button id="nextBtn">NEXT</button>
+    <button id="ngBtn">NG</button>
+
+    <div id="question">← ここに問題が表示されます</div>
+    <div id="answer"></div>
+    <div id="result"></div>
+  </div>
+
+  <!-- 読み上げ完了後に鳴らす音 -->
+  <audio id="endSound" src="sounds/end.mp3" preload="auto"></audio>
 
   <!-- PapaParseライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -41,11 +57,26 @@
     let currentIndex = -1;
     let showAnswerPhase = false;
 
-    // 読み上げ関数
+    const startBtn = document.getElementById("startBtn");
+    const startScreen = document.getElementById("startScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const endSound = document.getElementById("endSound");
+
+    // スタートボタンクリック
+    startBtn.addEventListener("click", () => {
+      startScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+      loadNextQuestion();
+    });
+
+    // 読み上げ関数（終了後に音を鳴らす）
     function speak(text) {
       if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "ja-JP";
+      utterance.onend = () => {
+        endSound.play(); // 読み上げ終了後に音を鳴らす
+      };
       speechSynthesis.speak(utterance);
     }
 
@@ -58,7 +89,6 @@
           skipEmptyLines: true
         });
         csvData = results.data;
-        loadNextQuestion();
       })
       .catch(error => {
         console.error("CSVの読み込みに失敗しました:", error);
@@ -78,8 +108,7 @@
       document.getElementById("result").textContent = "";
       showAnswerPhase = true;
 
-      // 🔊 問題を読み上げる
-      speak(row.Question);
+      speak(row.Question); // 問題読み上げ
     }
 
     // NEXTボタン
