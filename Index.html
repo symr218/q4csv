@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>CSVランダム表示</title>
+</head>
+<body>
+  <h2>CSVからランダムに1件表示</h2>
+  <button id="showRandomBtn">ランダム表示</button>
+  <pre id="result">←ここに表示されます</pre>
+
+  <!-- PapaParseライブラリ（CDN） -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script>
+    let csvData = [];
+
+    // 初期読み込みでCSVを取得
+    fetch('data/data.csv') // ←ここをCSVファイルのパスに変更可能
+      .then(response => response.text())
+      .then(text => {
+        const results = Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true
+        });
+        csvData = results.data;
+        console.log("CSV読み込み完了", csvData);
+      })
+      .catch(error => {
+        console.error("CSVの読み込みに失敗しました:", error);
+      });
+
+    // ボタンクリックでランダム表示
+    document.getElementById("showRandomBtn").addEventListener("click", function () {
+      if (csvData.length === 0) {
+        alert("CSVの読み込みがまだ完了していません。");
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * csvData.length);
+      const row = csvData[randomIndex];
+      document.getElementById("result").textContent =
+        `Q: ${row.Question}\nA: ${row.Answer}`;
+    });
+  </script>
+</body>
+</html>
