@@ -73,6 +73,7 @@
       if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "ja-JP";
+      utterance.pitch = 1.8;   // 声を高く（1.0が標準）
 
       utterance.onend = () => {
         endSound.playbackRate = 1.5; // ← 効果音も速く
