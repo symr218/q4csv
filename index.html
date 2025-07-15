@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>CSVクイズ</title>
+  <title>CSVクイズ with Sound</title>
 </head>
 <body>
   <h2>クイズ出題システム（CSVから）</h2>
@@ -11,13 +11,15 @@
   <pre id="question">← ここに問題が表示されます</pre>
   <pre id="answer" style="color: green;"></pre>
 
-  <!-- PapaParseライブラリ（CDN） -->
+  <!-- 効果音 -->
+  <audio id="clickSound" src="sounds/click.mp3" preload="auto"></audio>
+
+  <!-- PapaParseライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     let csvData = [];
     let currentAnswer = "";
 
-    // CSVを読み込む
     fetch('data/data.csv')
       .then(response => response.text())
       .then(text => {
@@ -26,30 +28,30 @@
           skipEmptyLines: true
         });
         csvData = results.data;
-        console.log("CSV読み込み完了", csvData);
       })
       .catch(error => {
         console.error("CSVの読み込みに失敗しました:", error);
       });
 
-    // 「問題を表示」ボタン
     document.getElementById("showQuestionBtn").addEventListener("click", function () {
       if (csvData.length === 0) {
         alert("CSVの読み込みがまだ完了していません。");
         return;
       }
 
+      document.getElementById("clickSound").play(); // 音を鳴らす
+
       const randomIndex = Math.floor(Math.random() * csvData.length);
       const row = csvData[randomIndex];
 
       document.getElementById("question").textContent = `Q: ${row.Question}`;
-      document.getElementById("answer").textContent = ""; // 答え欄をクリア
+      document.getElementById("answer").textContent = "";
       currentAnswer = row.Answer;
       document.getElementById("showAnswerBtn").disabled = false;
     });
 
-    // 「答えを見る」ボタン
     document.getElementById("showAnswerBtn").addEventListener("click", function () {
+      document.getElementById("clickSound").play(); // 音を鳴らす
       document.getElementById("answer").textContent = `A: ${currentAnswer}`;
       this.disabled = true;
     });
