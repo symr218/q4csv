@@ -2,20 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>CSVランダム表示</title>
-</head> 
+  <title>CSVクイズ</title>
+</head>
 <body>
-  <h2>CSVからランダムに1件表示</h2>
-  <button id="showRandomBtn">ランダム表示</button>
-  <pre id="result">←ここに表示されます</pre>
+  <h2>クイズ出題システム（CSVから）</h2>
+  <button id="showQuestionBtn">ランダムに問題を表示</button>
+  <button id="showAnswerBtn" disabled>答えを見る</button>
+  <pre id="question">← ここに問題が表示されます</pre>
+  <pre id="answer" style="color: green;"></pre>
 
   <!-- PapaParseライブラリ（CDN） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     let csvData = [];
+    let currentAnswer = "";
 
-    // 初期読み込みでCSVを取得
-    fetch('data/data.csv') // ←ここをCSVファイルのパスに変更可能
+    // CSVを読み込む
+    fetch('data/data.csv')
       .then(response => response.text())
       .then(text => {
         const results = Papa.parse(text, {
@@ -29,16 +32,26 @@
         console.error("CSVの読み込みに失敗しました:", error);
       });
 
-    // ボタンクリックでランダム表示
-    document.getElementById("showRandomBtn").addEventListener("click", function () {
+    // 「問題を表示」ボタン
+    document.getElementById("showQuestionBtn").addEventListener("click", function () {
       if (csvData.length === 0) {
         alert("CSVの読み込みがまだ完了していません。");
         return;
       }
+
       const randomIndex = Math.floor(Math.random() * csvData.length);
       const row = csvData[randomIndex];
-      document.getElementById("result").textContent =
-        `Q: ${row.Question}\nA: ${row.Answer}`;
+
+      document.getElementById("question").textContent = `Q: ${row.Question}`;
+      document.getElementById("answer").textContent = ""; // 答え欄をクリア
+      currentAnswer = row.Answer;
+      document.getElementById("showAnswerBtn").disabled = false;
+    });
+
+    // 「答えを見る」ボタン
+    document.getElementById("showAnswerBtn").addEventListener("click", function () {
+      document.getElementById("answer").textContent = `A: ${currentAnswer}`;
+      this.disabled = true;
     });
   </script>
 </body>
