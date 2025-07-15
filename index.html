@@ -1,22 +1,55 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"> 
-  <title>q4csv</title>
+  <meta charset="UTF-8">
+  <title>CSVクイズシステム</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #question, #answer, #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #answer {
+      color: green;
+    }
+    #result {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-  <h2>システム</h2> 
-  <button id="showQuestionBtn">ランダムに問題を表示</button>
-  <button id="showAnswerBtn" disabled>答えを見る</button>
-  <pre id="question">← ここに問題が表示されます</pre>
-  <pre id="answer" style="color: green;"></pre>
+  <h2>CSVクイズシステム</h2>
+  <button id="nextBtn">NEXT</button>
+  <button id="ngBtn">NG</button>
+
+  <div id="question">← ここに問題が表示されます</div>
+  <div id="answer"></div>
+  <div id="result"></div>
 
   <!-- PapaParseライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
     let csvData = [];
-    let currentAnswer = "";
+    let currentIndex = -1;
+    let showAnswerPhase = false;
 
+    // 読み上げ関数
+    function speak(text) {
+      if (!text) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ja-JP";
+      speechSynthesis.speak(utterance);
+    }
+
+    // CSVを読み込む
     fetch('data/data.csv')
       .then(response => response.text())
       .then(text => {
@@ -25,34 +58,44 @@
           skipEmptyLines: true
         });
         csvData = results.data;
+        loadNextQuestion();
       })
       .catch(error => {
         console.error("CSVの読み込みに失敗しました:", error);
       });
 
-    document.getElementById("showQuestionBtn").addEventListener("click", function () {
-      if (csvData.length === 0) {
-        alert("CSVの読み込みがまだ完了していません。");
+    function loadNextQuestion() {
+      currentIndex++;
+      if (currentIndex >= csvData.length) {
+        document.getElementById("question").textContent = "これで最後の問題です。";
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("ngBtn").disabled = true;
         return;
       }
-
-      const randomIndex = Math.floor(Math.random() * csvData.length);
-      const row = csvData[randomIndex];
-
+      const row = csvData[currentIndex];
       document.getElementById("question").textContent = `Q: ${row.Question}`;
       document.getElementById("answer").textContent = "";
-      currentAnswer = row.Answer;
-      document.getElementById("showAnswerBtn").disabled = false;
+      document.getElementById("result").textContent = "";
+      showAnswerPhase = true;
+
+      // 🔊 問題を読み上げる
+      speak(row.Question);
+    }
+
+    // NEXTボタン
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      const row = csvData[currentIndex];
+      if (showAnswerPhase) {
+        document.getElementById("answer").textContent = `A: ${row.Answer}`;
+        showAnswerPhase = false;
+      } else {
+        loadNextQuestion();
+      }
     });
 
-    document.getElementById("showAnswerBtn").addEventListener("click", function () {
-      document.getElementById("answer").textContent = `A: ${currentAnswer}`;
-      this.disabled = true;
-
-      // 🔊 音声で読み上げる（SpeechSynthesis API）
-      const utterance = new SpeechSynthesisUtterance(currentAnswer);
-      utterance.lang = "ja-JP";
-      speechSynthesis.speak(utterance); 
+    // NGボタン
+    document.getElementById("ngBtn").addEventListener("click", function () {
+      document.getElementById("result").textContent = "不正解！";
     });
   </script>
 </body>
