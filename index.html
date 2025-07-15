@@ -2,17 +2,14 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>CSVクイズ with Sound</title>
+  <title>q4csv</title>
 </head>
 <body>
-  <h2>クイズ出題システム（CSVから）</h2>
+  <h2>システム</h2>
   <button id="showQuestionBtn">ランダムに問題を表示</button>
   <button id="showAnswerBtn" disabled>答えを見る</button>
   <pre id="question">← ここに問題が表示されます</pre>
   <pre id="answer" style="color: green;"></pre>
-
-  <!-- 効果音 -->
-  <audio id="clickSound" src="sounds/click.mp3" preload="auto"></audio>
 
   <!-- PapaParseライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -39,8 +36,6 @@
         return;
       }
 
-      document.getElementById("clickSound").play(); // 音を鳴らす
-
       const randomIndex = Math.floor(Math.random() * csvData.length);
       const row = csvData[randomIndex];
 
@@ -51,9 +46,13 @@
     });
 
     document.getElementById("showAnswerBtn").addEventListener("click", function () {
-      document.getElementById("clickSound").play(); // 音を鳴らす
       document.getElementById("answer").textContent = `A: ${currentAnswer}`;
       this.disabled = true;
+
+      // 🔊 音声で読み上げる（SpeechSynthesis API）
+      const utterance = new SpeechSynthesisUtterance(currentAnswer);
+      utterance.lang = "ja-JP";
+      speechSynthesis.speak(utterance);
     });
   </script>
 </body>
