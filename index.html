@@ -75,7 +75,7 @@
       utterance.lang = "ja-JP";
 
       utterance.onend = () => {
-        // 再生 → 0.5秒後に停止
+        endSound.playbackRate = 1.5; // ← 効果音も速く
         endSound.currentTime = 0;
         endSound.play();
         setTimeout(() => {
