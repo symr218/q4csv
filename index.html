@@ -2,11 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>q4csv</title>
+  <title>略語クイズ q4csv</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
+      background-color: #f8f8f8;
     }
     .hidden {
       display: none;
@@ -15,16 +16,36 @@
       margin: 5px;
       padding: 10px 20px;
       font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #startBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #nextBtn {
+      background-color: #2196F3;
+      color: white;
+    }
+    #ngBtn {
+      background-color: #f44336;
+      color: white;
     }
     #question, #answer, #result {
       margin-top: 20px;
-      font-size: 18px;
+      font-size: 20px;
+    }
+    #question {
+      font-weight: bold;
     }
     #answer {
       color: green;
+      font-weight: bold;
     }
     #result {
       color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -32,22 +53,22 @@
 
   <!-- スタート画面 -->
   <div id="startScreen">
-    <h2>q4csv</h2>
+    <h2>略語クイズ：これは何の略？</h2>
     <button id="startBtn">スタート</button>
   </div>
 
-  <!-- クイズ画面（非表示スタート） -->
+  <!-- クイズ画面 -->
   <div id="quizScreen" class="hidden">
-    <h2>CSVクイズ</h2>
-    <button id="nextBtn">NEXT</button>
-    <button id="ngBtn">NG</button>
+    <h2>問題に答えよう！</h2>
+    <button id="nextBtn">NEXT（次へ）</button>
+    <button id="ngBtn">NG（わからない）</button>
 
-    <div id="question">← ここに問題が表示されます</div>
+    <div id="question">← 略語の問題がここに表示されます</div>
     <div id="answer"></div>
     <div id="result"></div>
   </div>
 
-  <!-- 読み上げ完了後に鳴らす音 -->
+  <!-- 効果音 -->
   <audio id="endSound" src="sounds/end.mp3" preload="auto"></audio>
   <audio id="answerSound" src="sounds/answer.mp3" preload="auto"></audio>
 
@@ -62,8 +83,9 @@
     const startScreen = document.getElementById("startScreen");
     const quizScreen = document.getElementById("quizScreen");
     const endSound = document.getElementById("endSound");
+    const answerSound = document.getElementById("answerSound");
 
-    // スタートボタンクリック
+    // スタートボタン
     startBtn.addEventListener("click", () => {
       startScreen.classList.add("hidden");
       quizScreen.classList.remove("hidden");
@@ -74,22 +96,22 @@
       if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "ja-JP";
-      utterance.pitch = 2.0;   // 声を高く（1.0が標準）
+      utterance.pitch = 2.0;
 
       utterance.onend = () => {
-        endSound.playbackRate = 1.5; // ← 効果音も速く
+        endSound.playbackRate = 1.5;
         endSound.currentTime = 0;
         endSound.play();
         setTimeout(() => {
           endSound.pause();
           endSound.currentTime = 0;
-        }, 1000); // ← 0.5秒（500ms）再生
+        }, 500);
       };
 
       speechSynthesis.speak(utterance);
     }
 
-    // CSVを読み込む
+    // CSV読み込み
     fetch('data/data.csv')
       .then(response => response.text())
       .then(text => {
@@ -106,29 +128,28 @@
     function loadNextQuestion() {
       currentIndex++;
       if (currentIndex >= csvData.length) {
-        document.getElementById("question").textContent = "これで最後の問題です。";
+        document.getElementById("question").textContent = "これで最後の問題です。おつかれさまでした！";
         document.getElementById("nextBtn").disabled = true;
         document.getElementById("ngBtn").disabled = true;
         return;
       }
       const row = csvData[currentIndex];
-      document.getElementById("question").textContent = `Q: ${row.Question}`;
+      document.getElementById("question").textContent = `Q: 『${row.Question}』は何の略？`;
       document.getElementById("answer").textContent = "";
       document.getElementById("result").textContent = "";
       showAnswerPhase = true;
 
-      speak(row.Question); // 問題読み上げ
+      speak(row.Question);
     }
 
     // NEXTボタン
     document.getElementById("nextBtn").addEventListener("click", function () {
       const row = csvData[currentIndex];
       if (showAnswerPhase) {
-        document.getElementById("answer").textContent = `A: ${row.Answer}`;
+        document.getElementById("answer").textContent = `正式名称：${row.Answer}`;
         showAnswerPhase = false;
 
-        // ✅ 答えを表示したときにSEを再生
-        const answerSound = document.getElementById("answerSound");
+        // 答え表示時のSE
         answerSound.currentTime = 0;
         answerSound.play();
       } else {
